@@ -3,6 +3,27 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+// import { is } from "express/lib/request.js";
+
+
+const generateAccessTokenandRefreshToken = async(userId)=>{
+  try{
+    const user = await User.findById(userId)
+if(!user){
+    throw new ApiError(404, "User not found");
+  }
+ const  accessToken =user.generateAccessToken();
+const refreshToken =user.generateRefreshToken();
+
+user.refreshToken=refreshToken;
+ await user.save({ValidateBeforeSave: false});
+return {accessToken, refreshToken};
+  }
+  catch(error){
+    throw new ApiError(500, "Internal server error while generating tokens");
+  }
+};
+
 
 const registerUser = asyncHandler(async (req, res) => {
   // res.status(201).json({ message: "Everything is okay" })
@@ -62,7 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
     avatar: avatar.url,
     coverImage: coverImage?.url || null,
   });
-
+4
   const createdUser = await User.findById(user._id).select("-password -refreshToken");
 
   if (!createdUser) {
@@ -74,4 +95,52 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "user registered successfully!!!"));
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async(req,res)=>{
+        //  res.status(200).json({ message: "Login user" });.
+        //req.body ->data
+        const {email,username,password}=req.body;
+        console.log("email",email);
+        // username or email validate
+        if(!username && !email){
+          throw new ApiError(400,"user name or email is required");
+        }
+        // find the user
+       const user =await User.findOne({
+          $or: [{email},{username}]
+        })
+        if(!user){
+          throw new ApiError(400,"user not found with this email or username");
+        }
+
+        // check password
+        const isPasswordValid =await user.isPasswordCorrect(password);
+         if(!isPasswordValid){
+          throw new ApiError(400,"Invalid password");
+         }
+         console.log(isPasswordValid);
+
+
+     const {accessToken,refreshToken} = await   generateAccessTokenandRefreshToken(user._id)
+     
+
+        // generate access token and refresh token
+
+const loggedUser =    await   User.findById(User._id).select("-password -refreshToken")
+        // send cookies
+
+        const cookieoptions = {
+          httpOnly:true,
+          secure:true,
+
+        }
+        return res
+        .status(200)
+         .cookie("accessToken", accessToken, cookieoptions)
+          .cookie("refreshToken", refreshToken, cookieoptions) 
+          .json(
+            new ApiResponse(200,{user:loggedUser,accessToken,refreshToken},"User logged in successfully!!!")
+          )
+        
+
+});
+export { registerUser, loginUser };
