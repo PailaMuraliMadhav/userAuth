@@ -3,9 +3,9 @@ import fs from "fs";
 
 // Configuration
 cloudinary.config({
-  cloud_name: "navyum",
-  api_key: "475888486772937",
-  api_secret: "JFW5S68zfqAYJ-uS8-uIRNquzjQ"
+  cloud_name: "muralipaila",
+  api_key: "362188349348182",
+  api_secret: "VeUYLpulTbCz-2GoFW4iMYXp0TU"
 });
 
 
