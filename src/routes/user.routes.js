@@ -1,6 +1,9 @@
 import express from "express";
 import { registerUser,loginUser,logoutUser } from "../controllers/user.controller.js";
-import { upload } from "../middlewares/multer.middleare.js";
+import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
 
 const router = express.Router()
 
@@ -20,5 +23,5 @@ router.route("/register").post(
 );
 
 router.route("/login").post(loginUser);
-
+router.route("/logout").get(verifyJWT,logoutUser);
 export default router;

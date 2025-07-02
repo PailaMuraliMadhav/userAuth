@@ -147,7 +147,25 @@ const logoutUser = asyncHandler(async(req,res)=> {
 //go to the user and remove refresh token
 User.findByIdAndUpdate(
   req.user._id,
+  {
+    $unsest:{
+      refreshToken:undefined || 1
+    }
+
+  },
+  {
+    new:true
+  }
   
 )
-})
+const options ={
+httpOnly:true,
+secure:true
+}
+return res
+ .status(201)
+ .clearCookie("accessToken", options)
+ .clearCookie("refreshToken", options)
+ .json(new ApiResponse(200, {}, "User logged out successfully!!!"))
+});
 export { registerUser, loginUser,logoutUser };
