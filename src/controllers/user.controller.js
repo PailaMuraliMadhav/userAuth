@@ -143,4 +143,11 @@ const loggedUser =    await   User.findById(User._id).select("-password -refresh
         
 
 });
-export { registerUser, loginUser };
+const logoutUser = asyncHandler(async(req,res)=> {
+//go to the user and remove refresh token
+User.findByIdAndUpdate(
+  req.user._id,
+  
+)
+})
+export { registerUser, loginUser,logoutUser };
